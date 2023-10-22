@@ -5,7 +5,7 @@
     "version": "${version}",
     "mcversion": "${mcversion}",
     "logoFile": "",
-    "url": "",
+    "url": "https://github.com/sysnote8main/EffectRing",
     "authorList": ["sysnote8"],
     "credits": "",
     "dependencies": ["baubles","autoreglib"]

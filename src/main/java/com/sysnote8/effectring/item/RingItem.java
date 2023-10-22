@@ -44,6 +44,9 @@ public class RingItem extends ItemBase implements IBauble {
                 ResourceLocation resourceLocation = new ResourceLocation(tagCompound.getString("id"));
                 if(Potion.REGISTRY.getKeys().contains(resourceLocation)) {
                     int amplifier = tagCompound.getInteger("amplifier")+1;
+                    if(amplifier<=0) {
+                        amplifier=1;
+                    }
                     potions.put(Potion.REGISTRY.getObject(resourceLocation), amplifier);
                 }
             }
