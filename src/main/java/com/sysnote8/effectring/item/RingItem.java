@@ -2,8 +2,11 @@ package com.sysnote8.effectring.item;
 
 import baubles.api.BaubleType;
 import baubles.api.BaublesApi;
-import com.sysnote8.effectring.MainMod;
+import baubles.api.IBauble;
+import com.sysnote8.effectring.util.MyLog;
 import com.sysnote8.effectring.util.NBTUtil;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -11,15 +14,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.potion.Potion;
-import baubles.api.IBauble;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.List;
 
 
 public class RingItem extends ItemBase implements IBauble {
@@ -30,31 +34,45 @@ public class RingItem extends ItemBase implements IBauble {
     }
 
     public static HashMap<Potion,Integer> getPotion(ItemStack stack) {
-        if(stack==null) return null;
+        if(stack==null||!NBTUtil.hasTag(stack,TagPotList)) return null;
         NBTTagList effectList = NBTUtil.getList(stack, TagPotList, Constants.NBT.TAG_COMPOUND, false);
         if(effectList.isEmpty()) return null;
         HashMap<Potion, Integer> potions = new HashMap<Potion, Integer>();
         for(int i=0;i<effectList.tagCount();i++) {
             NBTTagCompound tagCompound = effectList.getCompoundTagAt(i);
-            potions.put(Potion.REGISTRY.getObject(new ResourceLocation(tagCompound.getString("id"))),tagCompound.getInteger("amplifier"));
+            if(tagCompound.hasKey("id")) {
+                ResourceLocation resourceLocation = new ResourceLocation(tagCompound.getString("id"));
+                if(Potion.REGISTRY.getKeys().contains(resourceLocation)) {
+                    int amplifier = tagCompound.getInteger("amplifier")+1;
+                    potions.put(Potion.REGISTRY.getObject(resourceLocation), amplifier);
+                }
+            }
         }
         return potions;
     }
 
     @Override
-    public String getItemStackDisplayName(ItemStack stack) {
-        String displayName = super.getItemStackDisplayName(stack);
-        if(NBTUtil.hasTag(stack,TagPotList)) {
-            displayName+="(potions)";
+    @SideOnly(Side.CLIENT)
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
+        if(!stack.isEmpty()&&NBTUtil.hasTag(stack,TagPotList)) {
+            tooltip.add(I18n.format("gui.tooltip.effects"));
+            HashMap<Potion,Integer> potions = getPotion(stack);
+            if(potions!=null) {
+                potions.forEach((potion, value) -> tooltip.add(I18n.format(potion.getName()) + ": " + value));
+            }
         } else {
-            displayName+="(empty)";
+            tooltip.add(I18n.format("gui.tooltip.noeffects"));
         }
-        return displayName;
     }
 
     @Override
     public boolean hasEffect(ItemStack stack) {
-        return getPotion(stack) != null;
+        HashMap<Potion,Integer> potions = getPotion(stack);
+        if(potions!=null && potions.keySet().stream().count()==potions.values().stream().count()&&potions.values().stream().count()>0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -70,9 +88,12 @@ public class RingItem extends ItemBase implements IBauble {
     public void updateEffect(EntityLivingBase player, ItemStack stack) {
         if(!player.world.isRemote) {
             if (stack.isEmpty() || !(player instanceof EntityPlayer)) return;
-            getPotion(stack).forEach((potion,level) -> {
-                player.removePotionEffect(potion);
-            });
+            HashMap<Potion,Integer> stack_potion = getPotion(stack);
+            if(stack_potion!=null) {
+                stack_potion.forEach((potion, level) -> {
+                    player.removePotionEffect(potion);
+                });
+            }
             IInventory inventory = BaublesApi.getBaubles((EntityPlayer) player);
             ItemStack ringA = inventory.getStackInSlot(1);
             ItemStack ringB = inventory.getStackInSlot(2);
@@ -81,18 +102,18 @@ public class RingItem extends ItemBase implements IBauble {
             if (potionA == null&&potionB == null) return;
             HashMap<Potion, Integer> potions = potionA==null?potionB:potionA;
             if (potionB != null && potionA != null) {
-                potionB.forEach((key, value) -> potions.merge(key, value, Integer::sum));
+                potionB.forEach((key, value) -> potions.merge(key, value, (v1,v2)->v1+v2));
             }
-            potions.forEach((key, value) -> MainMod.LOGGER.info(key.getName() + "/" + value));
             potions.forEach((potion, level) -> {
                 level-=1;
                 player.removePotionEffect(potion);
-                if (255 < level) {
+                if(level < 0) { // Negative
+                    level = 0;
+                }
+                if (255 < level) { // Over 255
                     level = 255;
                 }
-                if (1 <= level) {
-                    player.addPotionEffect(new PotionEffect(potion, Integer.MAX_VALUE, level, true, false));
-                }
+                player.addPotionEffect(new PotionEffect(potion, Integer.MAX_VALUE, level, true, false));
             });
         }
     }

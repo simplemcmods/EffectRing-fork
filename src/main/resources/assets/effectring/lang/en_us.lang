@@ -1,1 +1,3 @@
 item.ring.name=Effect Ring
+gui.tooltip.effects=Effects
+gui.tooltip.noeffects=No Effects
