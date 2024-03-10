@@ -11,7 +11,7 @@ public class NBTUtil {
     }
 
     public static NBTTagCompound getNBT(ItemStack stack) {
-        if (!hasNBT(stack)) stack.setTagCompound(new NBTTagCompound());
+            if (!hasNBT(stack)) stack.setTagCompound(new NBTTagCompound());
         return stack.getTagCompound();
     }
 
