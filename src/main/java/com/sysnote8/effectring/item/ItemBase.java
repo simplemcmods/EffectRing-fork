@@ -20,9 +20,9 @@ public class ItemBase extends Item {
 
     public ItemBase(String name) {
         super();
-        this.name = name;
-        setTranslationKey(name);
-        setRegistryName(Tags.modid, name);
+            this.name = name;
+            setTranslationKey(name);
+            setRegistryName(Tags.modid, name);
         setCreativeTab(CreativeTabs.MATERIALS);
     }
 
