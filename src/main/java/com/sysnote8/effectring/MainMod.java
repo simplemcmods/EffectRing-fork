@@ -24,6 +24,7 @@ public class MainMod {
     public void preInit(FMLPreInitializationEvent event) {
         // register to the event bus so that we can listen to events
         MinecraftForge.EVENT_BUS.register(this);
+        // Some Comments
     }
 
     @SubscribeEvent
