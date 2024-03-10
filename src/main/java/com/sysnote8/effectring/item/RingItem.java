@@ -33,15 +33,15 @@ public class RingItem extends ItemBase implements IBauble {
 
     public RingItem() {
         super("ring");
-        setMaxStackSize(1);
+            setMaxStackSize(1);
     }
 
     public static HashMap<Potion, Integer> getPotion(ItemStack stack) {
         if (stack == null || !NBTUtil.hasTag(stack, TagPotList)) return null;
-        NBTTagList effectList = NBTUtil.getList(stack, TagPotList, Constants.NBT.TAG_COMPOUND, false);
-        if (effectList.isEmpty()) return null;
-        HashMap<Potion, Integer> potions = new HashMap<Potion, Integer>();
-        for (int i = 0; i < effectList.tagCount(); i++) {
+            NBTTagList effectList = NBTUtil.getList(stack, TagPotList, Constants.NBT.TAG_COMPOUND, false);
+            if (effectList.isEmpty()) return null;
+            HashMap<Potion, Integer> potions = new HashMap<Potion, Integer>();
+                    for (int i = 0; i < effectList.tagCount(); i++) {
             NBTTagCompound tagCompound = effectList.getCompoundTagAt(i);
             if (tagCompound.hasKey("id")) {
                 ResourceLocation resourceLocation = new ResourceLocation(tagCompound.getString("id"));
