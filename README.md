@@ -11,3 +11,5 @@ e.g.
 Ring with Night Vision(level:1): ```<effectring:ring:0>.withTag({effects:[{"id":"minecraft:night_vision","amplifier":1}]})```
 
 Ring with Regeneration(level:1) and Haste(level:1): ```<effectring:ring:0>.withTag({effects:[{"id":"minecraft:regeneration","amplifier":1},{"id":"minecraft:haste","amplifier":1}]})```
+
+I borrowed some codes from [GTExpert-Core](https://github.com/GTModpackTeam/GTExpert-Core)
